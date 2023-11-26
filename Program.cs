@@ -8,15 +8,31 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        builder.Services.AddControllersWithViews();
-        builder.Services.Configure<RazorViewEngineOptions>(options =>
-        {
-            options.ViewLocationExpanders.Add(new RazorLocationExpander());
-        });
+        AddServices(builder.Services);
 
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
+        ConfigurePipeline(app);
+
+        app.MapControllerRoute(
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        app.Run();
+    }
+
+    private static void AddServices(IServiceCollection services)
+    {
+        services.AddControllersWithViews();
+        services.Configure<RazorViewEngineOptions>(options =>
+        {
+            options.ViewLocationExpanders.Add(new RazorLocationExpander());
+        });
+    }
+
+    private static void ConfigurePipeline(WebApplication app)
+    {
         if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Home/Error");
@@ -30,11 +46,5 @@ internal class Program
         app.UseRouting();
 
         app.UseAuthorization();
-
-        app.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}");
-
-        app.Run();
     }
 }
