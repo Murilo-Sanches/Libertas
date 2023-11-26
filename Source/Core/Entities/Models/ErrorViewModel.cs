@@ -1,4 +1,4 @@
-namespace Libertas.Source.Models;
+namespace Libertas.Source.Core.Entities.Models;
 
 public class ErrorViewModel
 {

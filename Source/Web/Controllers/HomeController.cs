@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Libertas.Source.Models;
+using Libertas.Source.Core.Entities.Models;
 
-namespace Libertas.Source.Controllers;
+namespace Libertas.Source.Web.Controllers;
 
 public class HomeController(ILogger<HomeController> logger) : Controller
 {
