@@ -1,3 +1,6 @@
+using Libertas.Source.Configurations;
+using Microsoft.AspNetCore.Mvc.Razor;
+
 internal class Program
 {
     private static void Main(string[] args)
@@ -6,6 +9,10 @@ internal class Program
 
         // Add services to the container.
         builder.Services.AddControllersWithViews();
+        builder.Services.Configure<RazorViewEngineOptions>(options =>
+        {
+            options.ViewLocationExpanders.Add(new RazorLocationExpander());
+        });
 
         var app = builder.Build();
 

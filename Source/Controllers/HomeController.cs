@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Libertas.Models;
+using Libertas.Source.Models;
 
-namespace Libertas.Controllers;
+namespace Libertas.Source.Controllers;
 
 public class HomeController : Controller
 {
