@@ -25,6 +25,7 @@ internal class Program
     private static void AddServices(IServiceCollection services)
     {
         services.AddControllersWithViews();
+        services.AddRouting(options => options.LowercaseUrls = true);
         services.Configure<RazorViewEngineOptions>(options =>
         {
             options.ViewLocationExpanders.Add(new RazorLocationExpander());
