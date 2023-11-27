@@ -1,5 +1,9 @@
 using Libertas.Source.Configurations;
+using Libertas.Source.Core.Entities.Context;
+using Libertas.Source.Core.Entities.DAO;
+using Libertas.Source.Core.Entities.Repositories;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.EntityFrameworkCore;
 
 internal class Program
 {
@@ -8,7 +12,7 @@ internal class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        AddServices(builder.Services);
+        AddServices(builder);
 
         var app = builder.Build();
 
@@ -22,14 +26,27 @@ internal class Program
         app.Run();
     }
 
-    private static void AddServices(IServiceCollection services)
+    private static void AddServices(WebApplicationBuilder builder)
     {
+        var services = builder.Services;
+        var configuration = builder.Configuration;
+
         services.AddControllersWithViews();
         services.AddRouting(options => options.LowercaseUrls = true);
         services.Configure<RazorViewEngineOptions>(options =>
         {
             options.ViewLocationExpanders.Add(new RazorLocationExpander());
         });
+
+        services.AddDbContext<DataContext>(options =>
+        {
+            var connection = configuration.GetConnectionString("MySQL");
+            var serverVersion = new MySqlServerVersion(new Version(8, 0, 35));
+
+            options.UseMySql(connectionString: connection, serverVersion: serverVersion);
+        });
+
+        services.AddTransient<IUserDAO, UserRepository>();
     }
 
     private static void ConfigurePipeline(WebApplication app)
