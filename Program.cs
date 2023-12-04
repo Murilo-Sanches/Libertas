@@ -2,6 +2,7 @@ using Libertas.Source.Configurations;
 using Libertas.Source.Core.Entities.Context;
 using Libertas.Source.Core.Entities.DAO;
 using Libertas.Source.Core.Entities.Repositories;
+using Libertas.Source.Core.Services;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,7 @@ internal class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        ConfigurePipeline(app);
+        CreatePipeline(app);
 
         app.MapControllerRoute(
             name: "default",
@@ -38,18 +39,46 @@ internal class Program
             options.ViewLocationExpanders.Add(new RazorLocationExpander());
         });
 
+        services.AddTransient<IUserDAO, UserRepository>();
+
+        DataService(services, configuration);
+    }
+
+    public static void DataService(IServiceCollection services, IConfiguration configuration)
+    {
         services.AddDbContext<DataContext>(options =>
         {
             var connection = configuration.GetConnectionString("MySQL");
-            var serverVersion = new MySqlServerVersion(new Version(8, 0, 35));
+            var server = new MySqlServerVersion(new Version(8, 0, 35));
 
-            options.UseMySql(connectionString: connection, serverVersion: serverVersion);
+            options.UseMySql(connectionString: connection, serverVersion: server);
         });
 
-        services.AddTransient<IUserDAO, UserRepository>();
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Development;
+
+        if (isDevelopment && Environment.GetCommandLineArgs().Any(arg => arg.Equals("SEED", StringComparison.CurrentCultureIgnoreCase)))
+        {
+            var seedCountArgIndex = Array.FindIndex(Environment.GetCommandLineArgs(), arg => arg.Equals("SEED", StringComparison.CurrentCultureIgnoreCase));
+
+            if (seedCountArgIndex < Environment.GetCommandLineArgs().Length - 1 && int.TryParse(Environment.GetCommandLineArgs()[seedCountArgIndex + 1], out int seedCount))
+            {
+                services.AddTransient<Faker>();
+
+                using var serviceProvider = services.BuildServiceProvider();
+                var faker = serviceProvider.GetRequiredService<Faker>();
+
+                faker.SeedDummyData(seedCount);
+
+                return;
+            }
+
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine($"{Environment.NewLine}Invalid or missing seed count. Usage: SEED <seedCount>{Environment.NewLine}");
+            Console.ResetColor();
+        }
     }
 
-    private static void ConfigurePipeline(WebApplication app)
+    private static void CreatePipeline(WebApplication app)
     {
         if (!app.Environment.IsDevelopment())
         {
