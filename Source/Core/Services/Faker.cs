@@ -11,13 +11,18 @@ namespace Libertas.Source.Core.Services
         {
             _context.Database.EnsureCreated();
 
-            if (!_context.Users.Any())
+            var alreadyHasUsers = _context.Users.Any();
+            if (!alreadyHasUsers)
             {
                 var dummyUsers = SeedUsers(quantity);
                 _context.Set<User>().AddRange(dummyUsers);
                 _context.SaveChanges();
-                Console.WriteLine("Dummy users created.");
-            };
+                Logger.Success("Dummy users created.");
+            }
+            else
+            {
+                Logger.Warning("Users table already contains records.");
+            }
         }
 
         private static IEnumerable<User> SeedUsers(int quantity)
